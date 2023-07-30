@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"os"
 )
-
+type logger struct{}
 func main() {
 	//we attempt to connect to the google.com
 	connection, err := net.Dial("tcp", "google.com:http")
@@ -24,13 +24,24 @@ func main() {
 		os.Exit(1)
 	}
 	defer resp.Body.Close()
-	//getting the ip address
-	ip, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Printf("Something went wrong :%v", err.Error())
-		connection.Close()
-		os.Exit(1)
-	}
-	//if everything was alright we demonstrate the ip
-	fmt.Printf("You are connected to the internet and your ip :%v", string(ip))
+	//getting the ip address and demonstrate it 
+	//first way :
+
+	//_ , err := io.ReadAll(resp.Body)
+	//fmt.Printf("You are connected to the internet and your ip :")
+
+	//second way :
+
+	//io.Copy(os.Stdout , resp.Body)
+
+	//third way :
+	log := logger{}
+	io.Copy(log,resp.Body)
 }
+
+func (logger) Write(bs []byte)(length int,err error){
+	    //in this way ,we customized out own write function so that we could be able to modify it whenever we want 
+	    fmt.Print(string(bs))
+        return len(bs) , nil
+}
+
